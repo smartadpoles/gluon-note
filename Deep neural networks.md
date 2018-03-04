@@ -19,7 +19,7 @@ h_2 = \phi(W_2\boldsymbol{h_1} + b_2)\\
 ...\\
 h_n = \phi(W_n\boldsymbol{h_{n-1}} + b_n)
 $$
-**Note that each layer requires its own set of parameters**.Here, we’ve denoted the activation function for the hidden layers as $\phi$.Because we’re still focusing on *multiclass classification*, we’ll stick with the softmax activation in the output layer.
+**Note that each layer requires its own set of parameters**.Here, we’ve denoted the activation function for the hidden layers as $$\phi$$.Because we’re still focusing on *multiclass classification*, we’ll stick with the softmax activation in the output layer.
 $$
 \hat{y} = \mbox{softmax}(W_y \boldsymbol{h}_n + b_y)
 $$

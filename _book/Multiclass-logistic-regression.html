@@ -1,0 +1,581 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>Multiclass logistic regression · GitBook</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        
+        
+        
+    
+    <link rel="stylesheet" href="gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="Overfitting-and-regularization.html" />
+    
+    
+    <link rel="prev" href="./" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.2" data-path="Multiclass-logistic-regression.html">
+            
+                <a href="Multiclass-logistic-regression.html">
+            
+                    
+                    Multiclass logistic regression
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="Overfitting-and-regularization.html">
+            
+                <a href="Overfitting-and-regularization.html">
+            
+                    
+                    Overfitting and regularization
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" data-path="Deep neural networks.html">
+            
+                <a href="Deep neural networks.html">
+            
+                    
+                    Deep neural networks
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="." >Multiclass logistic regression</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <p>&#x6DF1;&#x5EA6;&#x5B66;&#x4E60;&#x591A;&#x5206;&#x7C7B;&#x95EE;&#x9898;&#xFF0C;logistics regression&#x6A21;&#x578B;&#xFF0C;&#x4F7F;&#x7528;mnist&#x6570;&#x636E;&#x96C6;&#x3002;</p>
+<!--more-->
+<h1 id="multiclass-logistic-regression">Multiclass logistic regression</h1>
+<p>Given $k$ classes, the most naive way to solve a <strong><em>multiclass classification</em></strong> problem is to train $k$ different binary classifiers $f_i(x)$.There&#x2019;s a smarter way to go about this. We could force the output layer to be a discrete probability distribution over the $k$ classes.</p>
+<p>We accomplish this by using the <strong><em>softmax</em> function</strong>. Given an input vector $z$, softmax does two things. First, it exponentiates (elementwise) $e^z$, forcing all values to be strictly positive. Then it normalizes so that all values sum to 1.
+<script type="math/tex; mode=display">
+\text{softmax}(\boldsymbol{z}) = \frac{e^{\boldsymbol{z}} }{\sum_{i=1}^k e^{z_i}}
+</script>
+Because now we have $k$ outputs and not 1 we&#x2019;ll need weights connecting each of our inputs to each of our outputs. Graphically, the network looks something like this:</p>
+<p><img src="https://github.com/zackchase/mxnet-the-straight-dope/blob/master/img/simple-softmax-net.png?raw=true" alt=""></p>
+<p>We generate the linear mapping from inputs to outputs via a matrix-vector product $\boldsymbol{x}W+\boldsymbol{b}$.</p>
+<p>The whole model, including the activation function can be written:
+<script type="math/tex; mode=display">
+\hat{y} = \text{softmax}(\boldsymbol{x} W + \boldsymbol{b})
+</script>
+This model is sometimes called <em>multiclass logistic regression</em>. Other common names for it include <em>softmax regression</em> and <em>multinomial regression</em>.</p>
+<h2 id="about-batch-training">About batch training</h2>
+<p>In the above, we used plain lowercase letters for scalar variables, bolded lowercase letters for <strong>row</strong> vectors, and uppercase letters for matrices.</p>
+<p> Assume we have $d$ inputs and $k$ outputs. Let&#x2019;s note the shapes of the various variables explicitly as follows:
+<script type="math/tex; mode=display">
+\underset{1 \times k}{\boldsymbol z} = \underset{1 \times d}{\boldsymbol{x}}\ \underset{d \times k}{W} + \underset{1 \times k}{\boldsymbol{b}}
+</script>
+Often we would one-hot encode the output label. So $\hat{y} = \text{softmax}(\boldsymbol z)$ becomes:
+<script type="math/tex; mode=display">
+\underset{1 \times k}{\boldsymbol{\hat{y}}_{one-hot}} = \text{softmax}_{one-hot}(\underset{1 \times k}{\boldsymbol z})
+</script>
+When we input a batch of $m$ training examples, we would have matrix $\underset{m \times d}{X}$ that is the vertical stacking of individual training examples $\boldsymbol x<em>i$, due to the choice of using row vectors.
+<script type="math/tex; mode=display">
+\begin{split}X=
+\begin{bmatrix}
+    \boldsymbol x_1 \\
+    \boldsymbol x_2 \\
+    \vdots \\
+    \boldsymbol x_m
+\end{bmatrix}
+=
+\begin{bmatrix}
+    x_{11} & x_{12} & x_{13} & \dots  & x_{1d} \\
+    x_{21} & x_{22} & x_{23} & \dots  & x_{2d} \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    x_{m1} & x_{m2} & x_{m3} & \dots  & x_{md}
+\end{bmatrix}\end{split}
+</script>
+${\boldsymbol{\hat{y}}</em>{one-hot}} = \text{softmax}({\boldsymbol z})$turns into:
+<script type="math/tex; mode=display">
+Y = \text{softmax}(Z) = \text{softmax}(XW + B)
+</script>
+&#x8FD9;&#x91CC;$B$&#x662F;m*k&#x77E9;&#x9635;&#xFF0C;&#x5176;&#x76F8;&#x5F53;&#x4E8E;$\boldsymbol{b}$&#x7684;m&#x6B21;&#x62F7;&#x8D1D;&#xFF0C;&#x5982;&#x4E0B;&#x56FE;&#x6240;&#x793A;&#xFF1A;
+<script type="math/tex; mode=display">
+\begin{split} B =
+\begin{bmatrix}
+    \boldsymbol b \\
+    \boldsymbol b \\
+    \vdots \\
+    \boldsymbol b
+\end{bmatrix}
+=
+\begin{bmatrix}
+    b_{1} & b_{2} & b_{3} & \dots  & b_{k} \\
+    b_{1} & b_{2} & b_{3} & \dots  & b_{k} \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    b_{1} & b_{2} & b_{3} & \dots  & b_{k}
+\end{bmatrix}\end{split}
+</script>
+&#x663E;&#x7136;&#xFF0C;&#x53EF;&#x4EE5;&#x901A;&#x8FC7;broadcasting&#x6765;&#x76F4;&#x63A5;&#x4F7F;&#x7528;$\boldsymbol{b}$&#x3002;</p>
+<p>Each row of matrix $\underset{m \times k}{Z}$ corresponds to one training example. The softmax function operates on each row of matrix $Z$ and returns a matrix $\underset{m \times k}{Y}$, each row of which corresponds to the one-hot encoded prediction of one training example.</p>
+<h2 id="the-mnist-dataset">The MNIST dataset</h2>
+<p>This time we&#x2019;re going to work with real data, each a 28 by 28 centrally cropped&#xFF08;&#x88C1;&#x526A;&#xFF09; black &amp; white photograph of a handwritten digit. Our task will be come up with a model that can associate each image with the digit (0-9) that it depicts.</p>
+<h2 id="the-cross-entropy-loss-function">The cross-entropy loss function</h2>
+<p>The relevant loss function here is called <strong>cross-entropy</strong> and it may be the most common loss function you&#x2019;ll find in all of deep learning. That&#x2019;s because at the moment, classification problems tend to be far more abundant than regression problems.</p>
+<p>The basic idea is that we&#x2019;re going to take a target Y that has been formatted as a one-hot vector, meaning one value corresponding to the correct label is set to 1 and the others are set to 0, e.g.<code>[0, 1, 0, 0, 0, 0, 0, 0, 0, 0]</code>.</p>
+<p>The basic idea of cross-entropy loss is that we only care about how much probability the prediction assigned to the correct label. In other words, for true label 2, we only care about the component of yhat corresponding to 2</p>
+<pre><code class="lang-python"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">cross_entropy</span><span class="hljs-params">(yhat, y)</span>:</span>
+    <span class="hljs-keyword">return</span> - nd.sum(y * nd.log(yhat+<span class="hljs-number">1e-6</span>))
+</code></pre>
+<p> MXNet&#x2019;s has an efficient function that <u>simultaneously computes the softmax activation and cross-entropy loss</u>. However, if ever need to get the output probabilities,</p>
+<pre><code class="lang-python">softmax_cross_entropy = gluon.loss.SoftmaxCrossEntropyLoss()
+</code></pre>
+<h2 id="scratch">scratch</h2>
+<pre><code class="lang-python"><span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+<span class="hljs-keyword">import</span> mxnet <span class="hljs-keyword">as</span> mx
+<span class="hljs-keyword">from</span> mxnet <span class="hljs-keyword">import</span> nd, autograd, gluon
+<span class="hljs-keyword">from</span> utils <span class="hljs-keyword">import</span> SGD
+<span class="hljs-keyword">import</span> matplotlib.pyplot <span class="hljs-keyword">as</span> plt
+<span class="hljs-keyword">import</span> time
+
+start_time = time.time()
+
+mx.random.seed(<span class="hljs-number">1</span>)
+
+data_ctx = mx.gpu(<span class="hljs-number">0</span>)
+model_ctx = mx.gpu(<span class="hljs-number">0</span>)
+
+num_inputs = <span class="hljs-number">784</span>  <span class="hljs-comment"># 28 * 28</span>
+num_outputs = <span class="hljs-number">10</span>
+num_examples = <span class="hljs-number">60000</span>
+
+W = nd.random_normal(shape=(num_inputs, num_outputs), ctx=model_ctx)
+
+b = nd.random_normal(shape=num_outputs, ctx=model_ctx)
+
+params = [W, b]
+
+<span class="hljs-keyword">for</span> param <span class="hljs-keyword">in</span> params:
+    param.attach_grad()
+
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">transform</span><span class="hljs-params">(data, label)</span>:</span>
+    <span class="hljs-comment"># cast data and label to floats and normalize data to range [0, 1]</span>
+    <span class="hljs-keyword">return</span> data.astype(np.float32)/<span class="hljs-number">255</span>, label.astype(np.float32)
+
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">softmax</span><span class="hljs-params">(y_linear)</span>:</span>
+    exp = nd.exp(y_linear-nd.max(y_linear, axis=<span class="hljs-number">1</span>).reshape((<span class="hljs-number">-1</span>, <span class="hljs-number">1</span>)))
+    norms = nd.sum(exp, axis=<span class="hljs-number">1</span>).reshape((<span class="hljs-number">-1</span>, <span class="hljs-number">1</span>))
+    <span class="hljs-keyword">return</span> exp / norms  <span class="hljs-comment"># &#x77E9;&#x9635;&#x9664;&#x4EE5;&#x5217;&#x5411;&#x91CF;&#xFF0C;&#x77E9;&#x9635;&#x6BCF;&#x4E00;&#x884C;&#x9664;&#x4EE5;&#x5217;&#x5411;&#x91CF;norms&#x7684;&#x6BCF;&#x4E00;&#x884C;&#x5143;&#x7D20;&#x3002;</span>
+
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">net</span><span class="hljs-params">(X)</span>:</span>
+    y_linear = nd.dot(X, W) + b
+    yhat = softmax(y_linear)
+    <span class="hljs-keyword">return</span> yhat
+
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">cross_entropy</span><span class="hljs-params">(yhat, y)</span>:</span>
+    <span class="hljs-keyword">return</span> - nd.sum(y * nd.log(yhat+<span class="hljs-number">1e-6</span>))
+
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">evaluate_accuracy</span><span class="hljs-params">(data_iterator, net)</span>:</span>
+    <span class="hljs-comment"># &#x8BA1;&#x7B97;&#x7CBE;&#x786E;&#x5EA6;</span>
+    numerator = <span class="hljs-number">0.</span>  <span class="hljs-comment"># &#x5206;&#x5B50;</span>
+    denominator = <span class="hljs-number">0.</span>  <span class="hljs-comment"># &#x5206;&#x6BCD;</span>
+    <span class="hljs-keyword">for</span> i, (data, label) <span class="hljs-keyword">in</span> enumerate(data_iterator):
+        data = data.as_in_context(model_ctx).reshape((<span class="hljs-number">-1</span>, <span class="hljs-number">784</span>))
+        label = label.as_in_context(model_ctx)
+        <span class="hljs-comment"># label_one_hot = nd.one_hot(label, 10)</span>
+        output = net(data)
+        predictions = nd.argmax(output, axis=<span class="hljs-number">1</span>)
+        numerator += nd.sum(predictions == label)
+        denominator += data.shape[<span class="hljs-number">0</span>]
+    <span class="hljs-keyword">return</span> (numerator / denominator).asscalar()
+
+
+mnist_train = gluon.data.vision.MNIST(root=<span class="hljs-string">&apos;../data_set/mnist&apos;</span>, train=<span class="hljs-keyword">True</span>, transform=transform)
+mnist_test = gluon.data.vision.MNIST(root=<span class="hljs-string">&apos;../data_set/mnist&apos;</span>, train=<span class="hljs-keyword">False</span>, transform=transform)
+
+<span class="hljs-string">&apos;&apos;&apos;
+# each item is a tuple of an image(28*28) and a label
+image, label = mnist_train[0]
+print(type(image))
+print(image.shape, label)  # 28 * 28 * 1
+
+im = mx.nd.tile(image, (1, 1, 3))  # &#x628A;&#x56FE;&#x7247;&#x6309;&#x7167;&#x7B2C;&#x4E09;&#x7EF4;broadcast&#xFF0C;&#x8FD9;&#x6837;matplotlib&#x624D;&#x80FD;&#x753B;&#x56FE;
+print(im.shape)
+
+plt.imshow(im.asnumpy())
+plt.show()
+&apos;&apos;&apos;</span>
+
+
+batch_size = <span class="hljs-number">64</span>
+train_data = mx.gluon.data.DataLoader(mnist_train, batch_size, shuffle=<span class="hljs-keyword">True</span>)
+
+test_data = mx.gluon.data.DataLoader(mnist_test, batch_size, shuffle=<span class="hljs-keyword">False</span>)
+
+
+epochs = <span class="hljs-number">20</span>
+learning_rate = <span class="hljs-number">.005</span>
+
+<span class="hljs-keyword">for</span> e <span class="hljs-keyword">in</span> range(epochs):
+    cumulative_loss = <span class="hljs-number">0</span>
+    <span class="hljs-keyword">for</span> i, (data, label) <span class="hljs-keyword">in</span> enumerate(train_data):
+        data = data.as_in_context(model_ctx).reshape((<span class="hljs-number">-1</span>, <span class="hljs-number">784</span>))
+        label = label.as_in_context(model_ctx)
+        label_one_hot = nd.one_hot(label, <span class="hljs-number">10</span>)
+        <span class="hljs-keyword">with</span> autograd.record():
+            output = net(data)
+            loss = cross_entropy(output, label_one_hot)
+        loss.backward()
+        SGD(params, learning_rate)
+        cumulative_loss += nd.sum(loss).asscalar()
+
+    test_accuracy = evaluate_accuracy(test_data, net)
+    train_accuracy = evaluate_accuracy(train_data, net)
+    print(<span class="hljs-string">&quot;Epoch {}. Loss: {}, Train_acc {:%}, Test_acc {:%}&quot;</span>.format(e, cumulative_loss/num_examples, train_accuracy, test_accuracy))
+
+
+<span class="hljs-comment"># Define the function to do prediction</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">model_predict</span><span class="hljs-params">(net, data)</span>:</span>
+    output = net(data)
+    <span class="hljs-keyword">return</span> nd.argmax(output, axis=<span class="hljs-number">1</span>)
+
+
+<span class="hljs-comment"># let&apos;s sample 10 random data points from the test set</span>
+sample_data = mx.gluon.data.DataLoader(mnist_test, batch_size=<span class="hljs-number">10</span>, shuffle=<span class="hljs-keyword">True</span>)
+<span class="hljs-keyword">for</span> i, (data, label) <span class="hljs-keyword">in</span> enumerate(sample_data):
+    data = data.as_in_context(model_ctx)
+    print(data.shape)
+    im = nd.transpose(data, (<span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>))
+    im = nd.reshape(im, (<span class="hljs-number">28</span>, <span class="hljs-number">10</span>*<span class="hljs-number">28</span>, <span class="hljs-number">1</span>))
+    imtiles = nd.tile(im, (<span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">3</span>))
+    print(imtiles.shape)
+
+    plt.imshow(imtiles.asnumpy())
+    plt.show()
+    pred = model_predict(net, data.reshape((<span class="hljs-number">-1</span>, <span class="hljs-number">784</span>)))
+    print(<span class="hljs-string">&apos;model predictions are:&apos;</span>, pred)
+    <span class="hljs-keyword">break</span>
+
+end_time = time.time()
+
+print(<span class="hljs-string">&apos;total time:%.0fs&apos;</span> % (end_time-start_time))
+</code></pre>
+<h2 id="gluon">gluon</h2>
+<pre><code class="lang-python"><span class="hljs-keyword">import</span> mxnet <span class="hljs-keyword">as</span> mx
+<span class="hljs-keyword">from</span> mxnet <span class="hljs-keyword">import</span> nd, autograd
+<span class="hljs-keyword">from</span> mxnet <span class="hljs-keyword">import</span> gluon
+<span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+<span class="hljs-keyword">import</span> matplotlib.pyplot <span class="hljs-keyword">as</span> plt
+
+data_ctx = mx.gpu(<span class="hljs-number">0</span>)
+model_ctx = mx.gpu(<span class="hljs-number">0</span>)
+
+mx.random.seed(<span class="hljs-number">1</span>)
+
+
+batch_size = <span class="hljs-number">64</span>
+num_inputs = <span class="hljs-number">784</span>
+num_outputs = <span class="hljs-number">10</span>
+num_examples = <span class="hljs-number">60000</span>
+
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">transform</span><span class="hljs-params">(data, label)</span>:</span>
+    <span class="hljs-keyword">return</span> data.astype(np.float32)/<span class="hljs-number">255</span>, label.astype(np.float32)
+
+
+train_data = mx.gluon.data.DataLoader(mx.gluon.data.vision.MNIST(root=<span class="hljs-string">&apos;../data_set/mnist&apos;</span>, train=<span class="hljs-keyword">True</span>, transform=transform), batch_size, shuffle=<span class="hljs-keyword">True</span>)
+test_data = mx.gluon.data.DataLoader(mx.gluon.data.vision.MNIST(root=<span class="hljs-string">&apos;../data_set/mnist&apos;</span>, train=<span class="hljs-keyword">False</span>, transform=transform), batch_size, shuffle=<span class="hljs-keyword">False</span>)
+
+net = gluon.nn.Dense(num_outputs)
+
+net.collect_params().initialize(mx.init.Normal(sigma=<span class="hljs-number">1.</span>), ctx=model_ctx)
+
+softmax_cross_entropy = gluon.loss.SoftmaxCrossEntropyLoss()
+
+trainer = gluon.Trainer(net.collect_params(), <span class="hljs-string">&apos;sgd&apos;</span>, {<span class="hljs-string">&apos;learning_rate&apos;</span>: <span class="hljs-number">0.1</span>})
+
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">evaluate_accuracy</span><span class="hljs-params">(data_iterator, net)</span>:</span>
+    acc = mx.metric.Accuracy()
+    <span class="hljs-keyword">for</span> i, (data, label) <span class="hljs-keyword">in</span> enumerate(data_iterator):
+        data = data.as_in_context(model_ctx).reshape((<span class="hljs-number">-1</span>, <span class="hljs-number">784</span>))
+        label = label.as_in_context(model_ctx)
+        output = net(data)
+        predictions = nd.argmax(output, axis=<span class="hljs-number">1</span>)
+        acc.update(preds=predictions, labels=label)
+    <span class="hljs-keyword">return</span> acc.get()[<span class="hljs-number">1</span>]
+
+
+print(<span class="hljs-string">&apos;&#x672A;&#x8BAD;&#x7EC3;&#x65F6;&#x7CBE;&#x786E;&#x5EA6; %.2f&apos;</span> % evaluate_accuracy(test_data, net))
+
+epochs = <span class="hljs-number">10</span>
+moving_loss = <span class="hljs-number">0</span>
+
+
+<span class="hljs-keyword">for</span> e <span class="hljs-keyword">in</span> range(epochs):
+    cumulative_loss = <span class="hljs-number">0</span>
+    <span class="hljs-keyword">for</span> data, label <span class="hljs-keyword">in</span> train_data:
+        data = data.as_in_context(model_ctx).reshape((<span class="hljs-number">-1</span>, <span class="hljs-number">784</span>))
+        label = label.as_in_context(model_ctx)
+        <span class="hljs-keyword">with</span> autograd.record():
+            output = net(data)
+            loss = softmax_cross_entropy(output, label)
+        loss.backward()
+        trainer.step(batch_size)
+        cumulative_loss += nd.sum(loss).asscalar()
+    test_accuracy = evaluate_accuracy(test_data, net)
+    train_accuracy = evaluate_accuracy(train_data, net)
+    print(<span class="hljs-string">&quot;Epoch {}. Loss: {}, Train_acc {:%}, Test_acc {:%}&quot;</span>.format(e, cumulative_loss / num_examples, train_accuracy,
+                                                                     test_accuracy))
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">model_predict</span><span class="hljs-params">(net,data)</span>:</span>
+    output = net(data.as_in_context(model_ctx))
+    <span class="hljs-keyword">return</span> nd.argmax(output, axis=<span class="hljs-number">1</span>)
+
+
+<span class="hljs-comment"># let&apos;s sample 10 random data points from the test set</span>
+sample_data = mx.gluon.data.DataLoader(mx.gluon.data.vision.MNIST(train=<span class="hljs-keyword">False</span>, transform=transform), <span class="hljs-number">10</span>, shuffle=<span class="hljs-keyword">True</span>)
+<span class="hljs-keyword">for</span> i, (data, label) <span class="hljs-keyword">in</span> enumerate(sample_data):
+    data = data.as_in_context(model_ctx)
+    print(data.shape)
+    im = nd.transpose(data, (<span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>))
+    im = nd.reshape(im, (<span class="hljs-number">28</span>, <span class="hljs-number">10</span>*<span class="hljs-number">28</span>, <span class="hljs-number">1</span>))
+    imtiles = nd.tile(im, (<span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">3</span>))
+
+    plt.imshow(imtiles.asnumpy())
+    plt.show()
+    pred = model_predict(net, data.reshape((<span class="hljs-number">-1</span>, <span class="hljs-number">784</span>)))
+    print(<span class="hljs-string">&apos;model predictions are:&apos;</span>, pred)
+    <span class="hljs-keyword">break</span>
+</code></pre>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="./" class="navigation navigation-prev " aria-label="Previous page: Introduction">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="Overfitting-and-regularization.html" class="navigation navigation-next " aria-label="Next page: Overfitting and regularization">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Multiclass logistic regression","date":"2018-02-26T11:26:16.000Z","tags":"machine_learning","categories":"AI","copyright":true,"level":"1.2","depth":1,"next":{"title":"Overfitting and regularization","level":"1.3","depth":1,"path":"Overfitting-and-regularization.md","ref":"Overfitting-and-regularization.md","articles":[]},"previous":{"title":"Introduction","level":"1.1","depth":1,"path":"README.md","ref":"README.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["mathjax","livereload"],"pluginsConfig":{"mathjax":{"forceSVG":false,"version":"2.6-latest"},"livereload":{},"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"Multiclass-logistic-regression.md","mtime":"2018-02-26T09:12:09.644Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-03-04T14:14:57.404Z"},"basePath":".","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <script src="gitbook/gitbook.js"></script>
+    <script src="gitbook/theme.js"></script>
+    
+        
+        <script src="https://cdn.mathjax.org/mathjax/2.6-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-mathjax/plugin.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-livereload/plugin.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+
